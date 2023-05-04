@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+  main:
+    container_name: work-task-server
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules/
+    ports:
+      - '${PORT}:${PORT}'
+      - '9229:9229'
+    command: npm run start:dev
+    env_file:
+      - .env
+    networks:
+      work-task-app:
+    depends_on:
+      - postgres
+  postgres:
+    container_name: work-task-postgres
+    image: postgres:15.2
+    networks:
+      work-task-app:
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_ADMIN_PASSWORD
+      POSTGRES_USER: $POSTGRES_ADMIN
+      POSTGRES_DB: $POSTGRES_DB
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    volumes:
+      - work-task-app-pgdata:/var/lib/postgresql/data
+networks:
+  work-task-app:
+volumes:
+  work-task-app-pgdata:
