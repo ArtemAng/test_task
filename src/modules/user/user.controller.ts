@@ -39,6 +39,11 @@ export class UserController {
     });
   }
 
+  @Get('/pdf/:id')
+  async getPdfForUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userService.generatePdfForUser(id);
+  }
+
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {
