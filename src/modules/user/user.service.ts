@@ -52,7 +52,7 @@ export class UserService {
       }
     };
 
-    let file_name = 'PDF_' + user.id + '.pdf';
+    const file_name = 'PDF_' + user.id + '.pdf';
     const pdfDoc = printer.createPdfKitDocument(docDefinition);
     pdfDoc.pipe(fs.createWriteStream( file_name, { }));
     pdfDoc.end();

@@ -32,42 +32,39 @@
 $ npm install
 ```
 
-## Running the app
+# Running application in development mode
+
+> Before you start, make sure that you've installed Docker.
+> You can use [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+1. Run docker-compose.
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+docker-compose up --build -V
 ```
 
-## Test
+2. Wait unless postgres container started
+3. Create user `test` (password: `test`) and database `test_db` (owner `test`) for bot inside postgres container
+4. Run next commands to setup database structure
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+export DATABASE_URL=postgresql://test:test@localhost:5432/test_db
+npm run build
+npm run migrations:run
+npm run seed
 ```
 
-## Support
+5. Create `.env` file in the root directory with the following content:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```dotenv
+PORT=8080
+DATABASE_URL=postgresql://test:test@postgres:5432/test_db
+POSTGRES_ADMIN=admin
+POSTGRES_ADMIN_PASSWORD=admin
+POSTGRES_DB=postgres
 
-## Stay in touch
+JWT_SECRET=secret
+JWT_EXPIRES_IN=365d
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+6. Restart docker-compose services
