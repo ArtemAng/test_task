@@ -12,7 +12,7 @@ export class CreateUserDto {
   @MinLength(3)
   lastName: User['lastName'];
   
-  @IsNotEmpty()
+  // @IsNotEmpty()
   image: User['image'];
   
   @IsNotEmpty()

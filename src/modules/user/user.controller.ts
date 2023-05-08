@@ -7,11 +7,18 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards
+  UseGuards,
+  UseInterceptors, UploadedFile, UploadedFiles,
+  Res,
+  HttpStatus,
+  BadRequestException
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { editFileName, imageFileFilter } from 'src/utils/file-upload.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto.ts';
 import { JwtAuthGuard } from './jwt/jwt-auth-guard';
+import { diskStorage } from 'multer';
 import { JwtAuthService } from './jwt/jwt-auth.service';
 import { UserService } from './user.service';
 
@@ -23,7 +30,7 @@ export class UserController {
   constructor(
     private userService: UserService,
     private jwtAuthService: JwtAuthService
-  ) {}
+  ) { }
 
   @Get(':id')
   async getUser(@Param('id', ParseUUIDPipe) id: string) {
@@ -33,25 +40,36 @@ export class UserController {
   }
 
   @Post()
-  async createUser(@Body() user: CreateUserDto) {
-    const createdUser = await this.userService.findOrCreate(user);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async createUser(@Body() user: CreateUserDto, @UploadedFile() file) {
+    if(!file) throw new BadRequestException();
+
+    const createdUser = await this.userService.findOrCreate({...user, image: file.path});
     const { accessToken } = await this.jwtAuthService.login(createdUser);
-    console.log('tut');
     
+
     return { user: createdUser, token: accessToken };
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  async updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() user: UpdateUserDto){
-    
+  async updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() user: UpdateUserDto) {
+
     return await this.userService.updateUser(id, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  async deleteUser(@Param('id', ParseUUIDPipe) id: string){
-    
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
+
     return await this.userService.deleteUser(id);
   }
 }
